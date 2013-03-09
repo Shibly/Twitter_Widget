@@ -19,6 +19,10 @@ class Twitter extends WP_Widget {
         parent::__construct('Twitter', '', $params);
     }
 
+    /**
+     * 
+     * @param type $instance
+     */
     public function form($instance) {
 
         extract($instance);
@@ -49,6 +53,11 @@ class Twitter extends WP_Widget {
         <?php
     }
 
+    /**
+     * 
+     * @param type $args
+     * @param type $instance
+     */
     public function widget($args, $instance) {
         extract($args);
         extract($instance);
@@ -69,6 +78,12 @@ class Twitter extends WP_Widget {
         echo $after_widget;
     }
 
+    /**
+     * 
+     * @param type $tweet_count
+     * @param type $username
+     * @return boolean
+     */
     private function twitter($tweet_count, $username) {
         if (empty($username)) {
             return false;
@@ -81,6 +96,12 @@ class Twitter extends WP_Widget {
         return $tweets;
     }
 
+    /**
+     * 
+     * @param type $tweet_count
+     * @param type $username
+     * @return boolean|\stdClass
+     */
     private function fetch_tweets($tweet_count, $username) {
         $tweets = wp_remote_get("https://api.twitter.com/1/statuses/user_timeline/$username.json");
 
@@ -102,6 +123,11 @@ class Twitter extends WP_Widget {
         return $data;
     }
 
+    /**
+     * 
+     * @param type $tweet
+     * @return type
+     */
     private function filter_tweets($tweet) {
         $tweet = preg_replace('/(http[^s]+)/im', '<a href="$1">$1</a>', $tweet);
         $tweet = preg_replace('/@([^s]+)/i', '<a href="http://twitter.com/$1">@$1></a>', $tweet);
