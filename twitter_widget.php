@@ -57,9 +57,15 @@ class Twitter extends WP_Widget {
             $title = 'Recent Tweets';
         }
 
-        echo $before_widget;
-        echo $before_title . $title . $after_title;
+
+
         $data = $this->twitter($tweet_count, $username);
+        if (FALSE !== $data && isset($data->tweets))
+            echo $before_widget;
+        echo $before_title;
+        echo $title;
+        echo $after_title;
+        echo '<ul><li>' . implode('</li><li>', $data->tweets) . '</li></ul>';
         echo $after_widget;
     }
 
@@ -67,7 +73,12 @@ class Twitter extends WP_Widget {
         if (empty($username)) {
             return false;
         }
-        $this->fetch_tweets($tweet_count, $username);
+
+        $tweets = get_transient('recent_tweets_widget');
+        if (!$tweets) {
+            return $this->fetch_tweets($tweet_count, $username);
+        }
+        return $tweets;
     }
 
     private function fetch_tweets($tweet_count, $username) {
@@ -77,19 +88,23 @@ class Twitter extends WP_Widget {
         if (isset($tweets->error)) {
             return false;
         }
+        $data = new stdClass();
+        $data->username = $username;
+        $data->tweet_count = $tweet_count;
+        $data->tweets = array();
 
         foreach ($tweets as $tweet) {
             if ($tweet_count-- === 0)
                 break;
-            echo $this->filter_tweets($tweet->text);
+            $data->tweets[] = $this->filter_tweets($tweet->text);
         }
-        
-        set_transient('recent_tweets_widget', $data);
+        set_transient('recent_tweets_widget', $data, 60 * 5);
+        return $data;
     }
 
     private function filter_tweets($tweet) {
         $tweet = preg_replace('/(http[^s]+)/im', '<a href="$1">$1</a>', $tweet);
-        $tweet = preg_replace('/@([^s]+)/i', '<a href="http://twitter.com/$1">@$1></a>',$tweet);
+        $tweet = preg_replace('/@([^s]+)/i', '<a href="http://twitter.com/$1">@$1></a>', $tweet);
         return $tweet;
     }
 
