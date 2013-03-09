@@ -75,7 +75,7 @@ class Twitter extends WP_Widget {
         }
 
         $tweets = get_transient('recent_tweets_widget');
-        if (!$tweets) {
+        if (!$tweets || $tweets->username !== $username || $tweets->tweet_count !== $tweet_count) {
             return $this->fetch_tweets($tweet_count, $username);
         }
         return $tweets;
